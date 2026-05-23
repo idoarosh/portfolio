@@ -416,7 +416,7 @@ img { display: block; border-radius: 0; }
   /* STRIP WRAPPER — adjusted for smaller nav/footer/label */
   .strip-wrapper {
     top: 36px;
-    bottom: 76px;
+    bottom: 108px; /* 80px label/meta zone + 28px footer */
   }
 
   .strip {
@@ -687,6 +687,7 @@ let wasDragging = false;
 let touchStartX = 0;
 let touchStartY = 0;
 let lastTouchX = 0;
+let lastTouchY = 0;
 let velocity = 0;
 let isDragging = false;
 let directionLocked = false;
@@ -887,6 +888,7 @@ function setupWheelScroll() {
 }
 
 // ── TOUCH SCROLL ─────────────────────────────────────────────────────────────
+// Vertical swipe → horizontal strip scroll (like desktop wheel)
 function setupTouchScroll() {
   const wrappers = [
     document.getElementById('home-strip-wrapper'),
@@ -898,8 +900,7 @@ function setupTouchScroll() {
       if (currentView === 'about') return;
       touchStartX = e.touches[0].clientX;
       touchStartY = e.touches[0].clientY;
-      lastTouchX = touchStartX;
-      velocity = 0;
+      lastTouchY = touchStartY;
       isDragging = false;
       directionLocked = false;
     }, { passive: true });
@@ -911,10 +912,12 @@ function setupTouchScroll() {
       const dy = e.touches[0].clientY - touchStartY;
 
       if (!directionLocked) {
-        if (Math.abs(dx) > Math.abs(dy) + 4) {
+        if (Math.abs(dy) > Math.abs(dx) + 4) {
+          // Vertical swipe — lock to horizontal strip scroll
           isDragging = true;
           directionLocked = true;
-        } else if (Math.abs(dy) > Math.abs(dx) + 4) {
+        } else if (Math.abs(dx) > Math.abs(dy) + 4) {
+          // Horizontal swipe — release, do nothing
           directionLocked = true;
           return;
         }
@@ -922,11 +925,12 @@ function setupTouchScroll() {
 
       if (isDragging) {
         e.preventDefault();
-        const delta = lastTouchX - e.touches[0].clientX;
-        velocity = delta;
+        const delta = lastTouchY - e.touches[0].clientY;
+        // Swiping UP (negative dy) → strip moves LEFT
+        // Swiping DOWN (positive dy) → strip moves RIGHT
         targetX = clamp(targetX + delta, 0, maxScroll);
-        currentX = targetX; // Snap immediately for 1:1 tracking
-        lastTouchX = e.touches[0].clientX;
+        currentX = targetX;
+        lastTouchY = e.touches[0].clientY;
       }
     }, { passive: false });
 
@@ -934,8 +938,8 @@ function setupTouchScroll() {
       if (isDragging) {
         wasDragging = true;
         setTimeout(() => { wasDragging = false; }, 300);
-        velocity = 0;
       }
+      isDragging = false;
     }, { passive: true });
   });
 }

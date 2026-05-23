@@ -138,7 +138,6 @@ img { display: block; border-radius: 0; }
   flex-direction: row;
   height: 100%;
   gap: 8px;
-  overflow-x: hidden;
 }
 
 .strip-tile {
@@ -420,16 +419,9 @@ img { display: block; border-radius: 0; }
     bottom: 76px;
   }
 
-  /* STRIP — enable native horizontal touch scrolling */
   .strip {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
     gap: 4px;
   }
-
-  /* Hide scrollbar on mobile strips */
-  .strip::-webkit-scrollbar { display: none; }
-  .strip { scrollbar-width: none; }
 
   /* Home tiles — no brightness filter on mobile (no hover) */
   #view-home .strip-tile {
@@ -680,9 +672,46 @@ const about = {
   ]
 };
 
-// ── STATE ─────────────────────────────────────────────────────────────────────
+// ── STATE ─────────────────────────────────────────────────────────────────────────
 let currentView = 'home';
-let savedScrollLeft = 0;
+let activeStripId = 'home-strip';
+
+// ── SCROLL ENGINE (unified for desktop + mobile) ─────────────────────────
+let targetX = 0;
+let currentX = 0;
+let maxScroll = 0;
+let savedTargetX = 0;
+let wasDragging = false;
+
+// Touch state
+let touchStartX = 0;
+let touchStartY = 0;
+let lastTouchX = 0;
+let velocity = 0;
+let isDragging = false;
+let directionLocked = false;
+
+function clamp(val, min, max) {
+  return Math.max(min, Math.min(max, val));
+}
+
+function getMaxScroll(stripId) {
+  const strip = document.getElementById(stripId);
+  if (!strip) return 0;
+  const tiles = strip.querySelectorAll('.strip-tile');
+  if (tiles.length === 0) return 0;
+  const gap = parseInt(getComputedStyle(strip).gap) || 8;
+  let totalWidth = 0;
+  tiles.forEach((t, i) => {
+    totalWidth += t.offsetWidth;
+    if (i < tiles.length - 1) totalWidth += gap;
+  });
+  return Math.max(0, totalWidth - strip.parentElement.offsetWidth);
+}
+
+function recalcMaxScroll() {
+  maxScroll = getMaxScroll(activeStripId);
+}
 
 // ── NAV STATE ─────────────────────────────────────────────────────────────────
 function setNavState(view) {
@@ -700,7 +729,6 @@ function setNavState(view) {
     navAsterisk.style.display = 'inline';
     navAbout.classList.add('active');
   }
-  // project view: nothing bold
 }
 
 // ── VIEW SWITCHER ─────────────────────────────────────────────────────────────
@@ -724,12 +752,10 @@ function buildHome() {
   const stripHeight = strip.parentElement.offsetHeight;
 
   projects.forEach((p, i) => {
-    // Cover ratio: derive from URL or use default
     const coverRatios = [0.64, 0.8, 0.65, 0.8];
     const ratio = coverRatios[i] || 1.0;
     const w = stripHeight * ratio;
 
-    // Tile
     const tile = document.createElement('div');
     tile.className = 'strip-tile';
     tile.style.width = w + 'px';
@@ -739,9 +765,11 @@ function buildHome() {
     img.alt = p.title;
     img.loading = 'lazy';
     tile.appendChild(img);
-    tile.addEventListener('click', () => showProject(p));
+    tile.addEventListener('click', () => {
+      if (wasDragging) return;
+      showProject(p);
+    });
 
-    // Hover brightness effect
     tile.addEventListener('mouseenter', () => {
       const allTiles = strip.querySelectorAll('.strip-tile');
       allTiles.forEach(t => {
@@ -752,15 +780,46 @@ function buildHome() {
     strip.appendChild(tile);
   });
 
-  // Reset brightness when cursor leaves the strip
   strip.addEventListener('mouseleave', () => {
     strip.querySelectorAll('.strip-tile').forEach(t => {
       t.style.filter = 'brightness(0.85)';
     });
   });
 
-  // Build labels after tiles are in DOM
-  requestAnimationFrame(() => positionLabels());
+  requestAnimationFrame(() => {
+    recalcMaxScroll();
+    // Recreate labels
+    projects.forEach((p, i) => {
+      const label = document.createElement('div');
+      label.className = 'project-label';
+      const title = document.createElement('span');
+      title.className = 'lbl-title';
+      title.innerHTML = p.title;
+      label.appendChild(title);
+      if (p.subtitle) {
+        const subtitle = document.createElement('span');
+        subtitle.className = 'lbl-subtitle';
+        subtitle.innerHTML = p.subtitle;
+        label.appendChild(subtitle);
+      }
+      labelZone.appendChild(label);
+    });
+    updateLabelsFromX(currentX);
+  });
+}
+
+function updateLabelsFromX(x) {
+  const strip = document.getElementById('home-strip');
+  const labelZone = document.getElementById('home-label-zone');
+  const labels = labelZone.querySelectorAll('.project-label');
+  const tiles = strip.querySelectorAll('.strip-tile');
+
+  tiles.forEach((tile, i) => {
+    const tileLeft = tile.offsetLeft - x;
+    if (labels[i]) {
+      labels[i].style.left = (tileLeft + (i === 0 ? 24 : 0)) + 'px';
+    }
+  });
 }
 
 function positionLabels() {
@@ -771,7 +830,7 @@ function positionLabels() {
   const tiles = strip.querySelectorAll('.strip-tile');
   tiles.forEach((tile, i) => {
     const p = projects[i];
-    const tileLeft = tile.offsetLeft - strip.scrollLeft;
+    const tileLeft = tile.offsetLeft - currentX;
 
     const label = document.createElement('div');
     label.className = 'project-label';
@@ -780,86 +839,114 @@ function positionLabels() {
     const title = document.createElement('span');
     title.className = 'lbl-title';
     title.innerHTML = p.title;
-
     label.appendChild(title);
-    
+
     if (p.subtitle) {
       const subtitle = document.createElement('span');
       subtitle.className = 'lbl-subtitle';
       subtitle.innerHTML = p.subtitle;
       label.appendChild(subtitle);
     }
-    
+
     labelZone.appendChild(label);
   });
 }
-
-function updateLabelsOnScroll() {
-  const strip = document.getElementById('home-strip');
-  const labelZone = document.getElementById('home-label-zone');
-  const labels = labelZone.querySelectorAll('.project-label');
-  const tiles = strip.querySelectorAll('.strip-tile');
-  const scrollLeft = strip.scrollLeft;
-
-  tiles.forEach((tile, i) => {
-    const tileLeft = tile.offsetLeft - scrollLeft;
-    if (labels[i]) {
-      labels[i].style.left = (tileLeft + (i === 0 ? 24 : 0)) + 'px';
-    }
-  });
-}
-
-
 
 function scrollToProject(index) {
   const strip = document.getElementById('home-strip');
   const tiles = strip.querySelectorAll('.strip-tile');
   if (tiles[index]) {
-    strip.scrollTo({ left: tiles[index].offsetLeft, behavior: 'smooth' });
+    targetX = clamp(tiles[index].offsetLeft, 0, maxScroll);
   }
 }
 
-// ── WHEEL SCROLL (homepage & project page) ────────────────────────────────────
-let activeStripId = 'home-strip';
+// ── rAF ANIMATION LOOP ──────────────────────────────────────────────────────
+function animate() {
+  currentX = targetX;
 
-// ── MOBILE DETECTION ──────────────────────────────────────────────────────────
-function isMobile() {
-  return window.innerWidth <= 768;
+  const strip = document.getElementById(activeStripId);
+  if (strip) {
+    strip.style.transform = `translateX(${-currentX}px)`;
+  }
+
+  if (currentView === 'home') {
+    updateLabelsFromX(currentX);
+  }
+
+  requestAnimationFrame(animate);
 }
 
+// ── WHEEL SCROLL ─────────────────────────────────────────────────────────────
 function setupWheelScroll() {
   window.addEventListener('wheel', (e) => {
     if (currentView === 'about') return;
     e.preventDefault();
-    const strip = document.getElementById(activeStripId);
-    if (strip) {
-      strip.scrollLeft += e.deltaY + e.deltaX;
-      if (currentView === 'home') updateLabelsOnScroll();
-    }
+    const delta = e.deltaY + e.deltaX;
+    targetX = clamp(targetX + delta, 0, maxScroll);
   }, { passive: false });
 }
 
-// ── TOUCH SCROLL ──────────────────────────────────────────────────────────────
+// ── TOUCH SCROLL ─────────────────────────────────────────────────────────────
 function setupTouchScroll() {
-  // On mobile, strips use native overflow-x: auto for touch scrolling.
-  // We just need to sync the label positions during scroll on the home strip.
-  const homeStrip = document.getElementById('home-strip');
-  homeStrip.addEventListener('scroll', () => {
-    if (currentView === 'home') updateLabelsOnScroll();
-  });
+  const wrappers = [
+    document.getElementById('home-strip-wrapper'),
+    document.getElementById('proj-strip-wrapper')
+  ];
 
-  const projStrip = document.getElementById('proj-strip');
-  projStrip.addEventListener('scroll', () => {
-    // project strip scroll — no labels to sync, just allow native scroll
+  wrappers.forEach(wrapper => {
+    wrapper.addEventListener('touchstart', (e) => {
+      if (currentView === 'about') return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      lastTouchX = touchStartX;
+      velocity = 0;
+      isDragging = false;
+      directionLocked = false;
+    }, { passive: true });
+
+    wrapper.addEventListener('touchmove', (e) => {
+      if (currentView === 'about') return;
+
+      const dx = e.touches[0].clientX - touchStartX;
+      const dy = e.touches[0].clientY - touchStartY;
+
+      if (!directionLocked) {
+        if (Math.abs(dx) > Math.abs(dy) + 4) {
+          isDragging = true;
+          directionLocked = true;
+        } else if (Math.abs(dy) > Math.abs(dx) + 4) {
+          directionLocked = true;
+          return;
+        }
+      }
+
+      if (isDragging) {
+        e.preventDefault();
+        const delta = lastTouchX - e.touches[0].clientX;
+        velocity = delta;
+        targetX = clamp(targetX + delta, 0, maxScroll);
+        currentX = targetX; // Snap immediately for 1:1 tracking
+        lastTouchX = e.touches[0].clientX;
+      }
+    }, { passive: false });
+
+    wrapper.addEventListener('touchend', (e) => {
+      if (isDragging) {
+        wasDragging = true;
+        setTimeout(() => { wasDragging = false; }, 300);
+        velocity = 0;
+      }
+    }, { passive: true });
   });
 }
 
 // ── PROJECT VIEW ──────────────────────────────────────────────────────────────
 function showProject(project) {
-  savedScrollLeft = document.getElementById('home-strip').scrollLeft;
+  savedTargetX = targetX;
 
   const strip = document.getElementById('proj-strip');
   strip.innerHTML = '';
+  strip.style.transform = 'translateX(0px)';
 
   const stripHeight = strip.parentElement.offsetHeight;
 
@@ -897,7 +984,11 @@ function showProject(project) {
   const noteEl = document.getElementById('proj-note');
   noteEl.textContent = project.note || '';
   noteEl.style.display = project.note ? 'block' : 'none';
+
   activeStripId = 'proj-strip';
+  targetX = 0;
+  currentX = 0;
+  requestAnimationFrame(() => recalcMaxScroll());
 
   setNavState('project');
   switchView('view-project');
@@ -906,13 +997,17 @@ function showProject(project) {
 // ── HOME (RETURN) ─────────────────────────────────────────────────────────────
 function showHome() {
   activeStripId = 'home-strip';
+  targetX = savedTargetX;
+  currentX = savedTargetX;
+
   setNavState('home');
   switchView('view-home');
 
   requestAnimationFrame(() => {
+    recalcMaxScroll();
     const strip = document.getElementById('home-strip');
-    strip.scrollLeft = savedScrollLeft;
-    updateLabelsOnScroll();
+    strip.style.transform = `translateX(${-currentX}px)`;
+    updateLabelsFromX(currentX);
   });
 }
 
@@ -988,6 +1083,9 @@ function buildAbout() {
 }
 
 function showAbout() {
+  if (activeStripId === 'home-strip') {
+    savedTargetX = targetX;
+  }
   activeStripId = null;
   setNavState('about');
   switchView('view-about');
@@ -998,17 +1096,21 @@ buildHome();
 buildAbout();
 setupWheelScroll();
 setupTouchScroll();
-positionLabels();
-
-// Reposition labels on resize
-window.addEventListener('resize', () => {
-  buildHome(); // rebuild tiles with correct sizes on orientation change
+requestAnimationFrame(() => {
+  recalcMaxScroll();
   positionLabels();
+  animate();
 });
 
-// Sync home strip scroll → labels
-document.getElementById('home-strip').addEventListener('scroll', () => {
-  updateLabelsOnScroll();
+// Reposition on resize
+window.addEventListener('resize', () => {
+  buildHome();
+  recalcMaxScroll();
+  targetX = clamp(targetX, 0, maxScroll);
+  currentX = targetX;
+  const strip = document.getElementById(activeStripId);
+  if (strip) strip.style.transform = `translateX(${-currentX}px)`;
+  positionLabels();
 });
 </script>
 </body>

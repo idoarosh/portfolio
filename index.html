@@ -928,7 +928,7 @@ function setupTouchScroll() {
         const delta = lastTouchY - e.touches[0].clientY;
         // Swiping UP (negative dy) → strip moves LEFT
         // Swiping DOWN (positive dy) → strip moves RIGHT
-        targetX = clamp(targetX + delta, 0, maxScroll);
+        targetX = clamp(targetX + delta * 2.5, 0, maxScroll);
         currentX = targetX;
         lastTouchY = e.touches[0].clientY;
       }

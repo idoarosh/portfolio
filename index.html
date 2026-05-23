@@ -177,9 +177,9 @@ img { display: block; border-radius: 0; }
 .project-label {
   position: absolute;
   display: flex;
-  flex-direction: row;
-  align-items: baseline;
-  gap: 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
   pointer-events: none;
   white-space: nowrap;
 }
@@ -192,6 +192,13 @@ img { display: block; border-radius: 0; }
 .project-label .lbl-title {
   font-size: 13px;
   font-weight: 700;
+  text-transform: uppercase;
+}
+
+.project-label .lbl-subtitle {
+  font-size: 9px;
+  font-weight: 400;
+  color: #666666;
   text-transform: uppercase;
 }
 
@@ -389,6 +396,145 @@ img { display: block; border-radius: 0; }
   font-weight: 700;
   text-transform: uppercase;
 }
+
+/* ── MOBILE RESPONSIVE ── */
+@media (max-width: 768px) {
+  /* NAV */
+  #nav {
+    height: 36px;
+    padding: 0 16px;
+  }
+  #nav-logo { font-size: 12px; }
+  #nav-links { gap: 20px; font-size: 12px; }
+
+  /* FOOTER */
+  #footer {
+    height: 28px;
+    padding: 0 16px;
+    font-size: 8px;
+  }
+
+  /* STRIP WRAPPER — adjusted for smaller nav/footer/label */
+  .strip-wrapper {
+    top: 36px;
+    bottom: 76px;
+  }
+
+  /* STRIP — enable native horizontal touch scrolling */
+  .strip {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 4px;
+  }
+
+  /* Hide scrollbar on mobile strips */
+  .strip::-webkit-scrollbar { display: none; }
+  .strip { scrollbar-width: none; }
+
+  /* Home tiles — no brightness filter on mobile (no hover) */
+  #view-home .strip-tile {
+    filter: none;
+  }
+
+  /* LABEL ZONE */
+  .label-zone {
+    bottom: 28px;
+    height: 48px;
+  }
+
+  .project-label .lbl-title {
+    font-size: 11px;
+  }
+
+  .project-label .lbl-subtitle {
+    font-size: 7px;
+  }
+
+  /* META ZONE (project view) */
+  .meta-zone {
+    bottom: 28px;
+    height: 48px;
+    padding: 10px 16px 0 16px;
+    flex-wrap: wrap;
+  }
+
+  .meta-left {
+    min-width: auto;
+  }
+
+  .meta-left .m-title {
+    font-size: 11px;
+  }
+
+  .meta-center {
+    margin-left: 20px;
+    font-size: 11px;
+    max-width: 50%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .meta-note {
+    display: none !important;
+  }
+
+  /* ABOUT VIEW */
+  #view-about {
+    top: 36px;
+    bottom: 28px;
+    padding: 40px 16px;
+  }
+
+  #view-about .about-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-profile-pic {
+    grid-column: 1;
+    width: 120px;
+    height: 120px;
+    margin-bottom: 24px;
+  }
+
+  .about-bio {
+    grid-column: 1;
+    gap: 20px;
+  }
+
+  .about-bio p {
+    font-size: 14px;
+    max-width: none;
+  }
+
+  .about-section-gap { height: 60px; }
+  .about-section-gap-sm { height: 40px; }
+
+  .about-section-label {
+    grid-column: 1;
+    margin-bottom: 12px;
+  }
+
+  .about-details-wrapper {
+    grid-column: 1;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .font-row { gap: 24px; }
+  .font-hebrew { font-size: 28px; }
+  .font-english { font-size: 28px; }
+
+  .about-contact-items {
+    grid-column: 1;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .contact-item .c-value {
+    font-size: 13px;
+  }
+}
 </style>
 </head>
 <body>
@@ -446,6 +592,7 @@ const projects = [
   {
     id: "eliezer-ben-yehuda",
     title: "Eliezer Ben-Yehuda",
+    subtitle: "Body of Work",
     year: "2025",
     category: "Art Direction",
     description: "A visual exploration of Eliezer Ben-Yehuda’s obsession with the Hebrew language and its revival.",
@@ -461,12 +608,13 @@ const projects = [
   },
   {
     id: "project-two",
-    title: "Gus Van Sant: Poster Series",
+    title: "Gus Van Sant",
+    subtitle: "Poster Series",
     year: "2024",
     category: "Visual Identity",
     description: "A series of posters for a retrospective of lectures and screenings dedicated<br>to filmmaker Gus Van Sant.",
     note: "Created for \"Typography III\" course at Shenkar.",
-    coverImage: "projects/project 2/Main .png?v=3",
+    coverImage: "projects/project 2/Main new .png?v=4",
     images: [
       { url: "projects/project 2/1.mp4?v=4", ratio: 0.8 },
       { url: "projects/project 2/2.png?v=3", ratio: 0.8 },
@@ -477,6 +625,7 @@ const projects = [
   {
     id: "project-three",
     title: "Collective Memory",
+    subtitle: "Visual Study",
     year: "2024",
     category: "Image Making",
     description: "A study on the recognizability of everyday Israeli objects, exploring whether they remain memorable when stripped of form and detail.",
@@ -493,12 +642,13 @@ const projects = [
   },
   {
     id: "project-four",
-    title: "ATAR MAYNER - <span class=\"hebrew-title\">ל פ נ י ם</span>",
+    title: "Atar Mayner",
+    subtitle: "Vinyl Design",
     year: "2024",
     category: "Visual Identity",
     description: "Vinyl record design for Atar Mayner’s album, combining manual scanning with delicate typography to capture the raw, emotional atmosphere of the music.",
     note: "Created for \"Typography II\" course at Shenkar.",
-    coverImage: "projects/project 4/cover .png?v=2",
+    coverImage: "projects/project 4/Cover new .png?v=3",
     images: [
       { url: "projects/project 4/1.mp4?v=2", ratio: 0.8 },
       { url: "projects/project 4/2.png?v=2", ratio: 1.78 },
@@ -632,6 +782,14 @@ function positionLabels() {
     title.innerHTML = p.title;
 
     label.appendChild(title);
+    
+    if (p.subtitle) {
+      const subtitle = document.createElement('span');
+      subtitle.className = 'lbl-subtitle';
+      subtitle.innerHTML = p.subtitle;
+      label.appendChild(subtitle);
+    }
+    
     labelZone.appendChild(label);
   });
 }
@@ -664,6 +822,11 @@ function scrollToProject(index) {
 // ── WHEEL SCROLL (homepage & project page) ────────────────────────────────────
 let activeStripId = 'home-strip';
 
+// ── MOBILE DETECTION ──────────────────────────────────────────────────────────
+function isMobile() {
+  return window.innerWidth <= 768;
+}
+
 function setupWheelScroll() {
   window.addEventListener('wheel', (e) => {
     if (currentView === 'about') return;
@@ -674,6 +837,21 @@ function setupWheelScroll() {
       if (currentView === 'home') updateLabelsOnScroll();
     }
   }, { passive: false });
+}
+
+// ── TOUCH SCROLL ──────────────────────────────────────────────────────────────
+function setupTouchScroll() {
+  // On mobile, strips use native overflow-x: auto for touch scrolling.
+  // We just need to sync the label positions during scroll on the home strip.
+  const homeStrip = document.getElementById('home-strip');
+  homeStrip.addEventListener('scroll', () => {
+    if (currentView === 'home') updateLabelsOnScroll();
+  });
+
+  const projStrip = document.getElementById('proj-strip');
+  projStrip.addEventListener('scroll', () => {
+    // project strip scroll — no labels to sync, just allow native scroll
+  });
 }
 
 // ── PROJECT VIEW ──────────────────────────────────────────────────────────────
@@ -819,11 +997,13 @@ function showAbout() {
 buildHome();
 buildAbout();
 setupWheelScroll();
+setupTouchScroll();
 positionLabels();
 
 // Reposition labels on resize
 window.addEventListener('resize', () => {
-  if (currentView === 'home') positionLabels();
+  buildHome(); // rebuild tiles with correct sizes on orientation change
+  positionLabels();
 });
 
 // Sync home strip scroll → labels

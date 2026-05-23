@@ -485,6 +485,10 @@ img { display: block; border-radius: 0; }
     padding: 40px 16px;
   }
 
+  .desktop-br {
+    display: none;
+  }
+
   #view-about .about-grid {
     grid-template-columns: 1fr;
   }
@@ -611,7 +615,7 @@ const projects = [
     subtitle: "Poster Series",
     year: "2024",
     category: "Visual Identity",
-    description: "A series of posters for a retrospective of lectures and screenings dedicated to filmmaker Gus Van Sant.",
+    description: "A series of posters for a retrospective of lectures and screenings dedicated <br class=\"desktop-br\">to filmmaker Gus Van Sant.",
     note: "Created for \"Typography III\" course at Shenkar.",
     coverImage: "projects/project 2/Main new .png?v=4",
     images: [

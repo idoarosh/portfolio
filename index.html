@@ -661,6 +661,22 @@ const projects = [
       { url: "projects/project 4/6.png?v=2", ratio: 0.8 },
       { url: "projects/project 4/7.mov", ratio: 0.8 }
     ]
+  },
+  {
+    id: "project-five",
+    title: "Migdal Shalom",
+    subtitle: "Digital Product",
+    year: "2025",
+    category: "Digital Product",
+    description: "A digital experience for the iconic Migdal Shalom, featuring a landing page for opening day and a rooftop cafe app where visitors can reserve interactive, themed tables.",
+    note: "Created for \"Digital Products\" course at Shenkar.",
+    coverImage: "projects/project 5/Cover .png",
+    images: [
+      { url: "projects/project 5/1.mp4", ratio: 1.78 },
+      { url: "projects/project 5/2.png", ratio: 2.12 },
+      { url: "projects/project 5/3.mp4", ratio: 0.8 },
+      { url: "projects/project 5/4.png", ratio: 1.43 }
+    ]
   }
 ];
 
@@ -764,9 +780,9 @@ function buildHome() {
   const stripHeight = strip.parentElement.offsetHeight;
 
   projects.forEach((p, i) => {
-    const coverRatios = [0.64, 0.8, 0.65, 0.8];
-    const mobileMultipliers = [1.08, 0.85, 1.10, 1.10];
-    const desktopMultipliers = [1.10, 0.85, 1.0, 1.0];
+    const coverRatios = [0.64, 0.8, 0.65, 0.8, 0.8];
+    const mobileMultipliers = [1.08, 0.85, 1.10, 1.10, 1.0];
+    const desktopMultipliers = [1.10, 0.85, 1.0, 1.0, 1.0];
     const ratio = coverRatios[i] || 1.0;
     const isMobile = window.innerWidth <= 768;
     const mult = isMobile ? (mobileMultipliers[i] || 1.0) : (desktopMultipliers[i] || 1.0);

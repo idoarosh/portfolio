@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-<link rel="icon" type="image/png" href="projects/Favicon/Favicon .png">
+<link rel="icon" type="image/png" href="projects/Favicon/Favicon_square.png">
 <style>
 @font-face {
   font-family: 'David';
@@ -845,7 +845,7 @@ function buildHome() {
     tile.addEventListener('click', () => {
       if (wasDragging) return;
       showProject(p);
-      window.history.pushState({}, '', '/project/' + p.id);
+      window.history.pushState({}, '', '#project/' + p.id);
     });
 
     tile.addEventListener('mouseenter', () => {
@@ -1052,7 +1052,8 @@ function showProject(project) {
     tile.style.width = w + 'px';
     tile.style.cursor = 'default';
     
-    if (im.url.toLowerCase().endsWith('.mp4') || im.url.toLowerCase().endsWith('.mov')) {
+    const cleanUrl = im.url.split('?')[0].toLowerCase();
+    if (cleanUrl.endsWith('.mp4') || cleanUrl.endsWith('.mov')) {
       const vid = document.createElement('video');
       vid.src = im.url;
       vid.autoplay = true;
@@ -1128,7 +1129,7 @@ function showHome(push) {
     strip.style.transform = `translateX(${-currentX}px)`;
     updateLabelsFromX(currentX, 'home-strip', 'home-label-zone');
   });
-  if (push !== false) window.history.pushState({}, '', '/');
+  if (push !== false) window.history.pushState({}, '', '#');
 }
 
 // ── ABOUT VIEW ────────────────────────────────────────────────────────────────
@@ -1211,7 +1212,7 @@ function showAbout(push) {
   activeStripId = null;
   setNavState('about');
   switchView('view-about');
-  if (push !== false) window.history.pushState({}, '', '/about');
+  if (push !== false) window.history.pushState({}, '', '#about');
 }
 
 // ── EASTER EGG ────────────────────────────────────────────────────────────────
@@ -1305,15 +1306,19 @@ window.addEventListener('resize', () => {
 });
 // ── HISTORY API ──────────────────────────────────────────────────────────────
 window.addEventListener('popstate', () => {
-  const path = window.location.pathname;
-  if (path === '/' || path === '') {
+  const hash = window.location.hash;
+  if (!hash || hash === '#' || hash === '') {
     showHome(false);
-  } else if (path === '/about') {
+  } else if (hash === '#about') {
     showAbout(false);
-  } else if (path.startsWith('/project/')) {
-    const id = path.split('/project/')[1];
+  } else if (hash.startsWith('#project/')) {
+    const id = hash.split('#project/')[1];
     const project = projects.find(p => p.id === id);
-    if (project) showProject(project);
+    if (project) {
+      showProject(project);
+    } else {
+      showHome(false);
+    }
   }
 });
 </script>

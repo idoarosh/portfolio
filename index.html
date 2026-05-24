@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ido Arosh</title>
+<title>Ido Arosh | עידו ארוש</title>
 <meta name="description" content="Ido Arosh is a Visual Communication student at Shenkar and a graphic designer specializing in typography, digital products, and branding. עידו ארוש - תיק עבודות בתקשורת חזותית.">
 <meta name="keywords" content="Ido Arosh, עידו ארוש, Ido graphics, תקשורת חזותית, עיצוב גרפי, שנקר, Shenkar, graphic design, portfolio, תיק עבודות">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="projects/Favicon/Favicon .png">
 <style>
 @font-face {
   font-family: 'David';
@@ -253,6 +254,17 @@ img { display: block; border-radius: 0; }
   text-align: right;
 }
 
+/* ── GALLERY MODE FOR PROJECT VIEW ── */
+#view-project.is-gallery #proj-meta-zone {
+  display: none;
+}
+#view-project.is-gallery #proj-label-zone {
+  display: flex;
+}
+#view-project.is-gallery #proj-strip-wrapper {
+  bottom: 96px; 
+}
+
 
 /* ── ABOUT VIEW ── */
 #view-about {
@@ -480,6 +492,10 @@ img { display: block; border-radius: 0; }
     color: #888888;
   }
 
+  #view-project.is-gallery #proj-strip-wrapper {
+    bottom: 76px; 
+  }
+
   /* ABOUT VIEW */
   #view-about {
     top: 36px;
@@ -540,6 +556,12 @@ img { display: block; border-radius: 0; }
     font-size: 13px;
   }
 }
+
+/* ── EASTER EGG ── */
+@keyframes easterEggPop {
+  from { opacity: 0; transform: scale(0) rotate(var(--r)); }
+  to   { opacity: 1; transform: scale(1) rotate(var(--r)); }
+}
 </style>
 </head>
 <body>
@@ -577,7 +599,8 @@ img { display: block; border-radius: 0; }
   <div class="strip-wrapper" id="proj-strip-wrapper">
     <div class="strip" id="proj-strip"></div>
   </div>
-  <div class="meta-zone">
+  <div class="label-zone" id="proj-label-zone" style="display: none;"></div>
+  <div class="meta-zone" id="proj-meta-zone">
     <div class="meta-left">
       <div class="m-title" id="proj-title"></div>
     </div>
@@ -678,6 +701,26 @@ const projects = [
       { url: "projects/project 5/2.png", ratio: 2.12 },
       { url: "projects/project 5/3.mp4", ratio: 0.8 },
       { url: "projects/project 5/4.png", ratio: 1.43 }
+    ]
+  },
+  {
+    id: "project-six",
+    title: "Selected Works",
+    subtitle: "Commercial Design",
+    year: "2026",
+    category: "Misc",
+    description: "",
+    isGallery: true,
+    coverImage: "projects/Project 6/COVER .png?v=2",
+    images: [
+      { url: "projects/Project 6/Blue Serpent .png", ratio: 1.56 },
+      { url: "projects/Project 6/Mano Vino .png", ratio: 1.70 },
+      { url: "projects/Project 6/Haaretz .png", ratio: 1.70 }
+    ],
+    imageLabels: [
+      { title: "Blue Serpent", subtitle: "Visual Language" },
+      { title: "Mano Vino", subtitle: "Digital Campaign" },
+      { title: "Haaretz & TheMarker", subtitle: "Print Advertising" }
     ]
   }
 ];
@@ -782,9 +825,9 @@ function buildHome() {
   const stripHeight = strip.parentElement.offsetHeight;
 
   projects.forEach((p, i) => {
-    const coverRatios = [0.64, 0.8, 0.65, 0.8, 0.8];
-    const mobileMultipliers = [1.08, 0.85, 1.10, 1.10, 1.0];
-    const desktopMultipliers = [1.10, 0.85, 1.0, 1.0, 1.0];
+    const coverRatios = [0.64, 0.8, 0.65, 0.8, 0.8, 0.6];
+    const mobileMultipliers = [1.08, 0.85, 1.10, 1.10, 1.0, 1.0];
+    const desktopMultipliers = [1.10, 0.85, 1.0, 1.0, 1.0, 1.0];
     const ratio = coverRatios[i] || 1.0;
     const isMobile = window.innerWidth <= 768;
     const mult = isMobile ? (mobileMultipliers[i] || 1.0) : (desktopMultipliers[i] || 1.0);
@@ -802,6 +845,7 @@ function buildHome() {
     tile.addEventListener('click', () => {
       if (wasDragging) return;
       showProject(p);
+      window.history.pushState({}, '', '/project/' + p.id);
     });
 
     tile.addEventListener('mouseenter', () => {
@@ -842,9 +886,10 @@ function buildHome() {
   });
 }
 
-function updateLabelsFromX(x) {
-  const strip = document.getElementById('home-strip');
-  const labelZone = document.getElementById('home-label-zone');
+function updateLabelsFromX(x, stripId = 'home-strip', labelZoneId = 'home-label-zone') {
+  const strip = document.getElementById(stripId);
+  const labelZone = document.getElementById(labelZoneId);
+  if (!strip || !labelZone || labelZone.style.display === 'none') return;
   const labels = labelZone.querySelectorAll('.project-label');
   const tiles = strip.querySelectorAll('.strip-tile');
 
@@ -904,7 +949,9 @@ function animate() {
   }
 
   if (currentView === 'home') {
-    updateLabelsFromX(currentX);
+    updateLabelsFromX(currentX, 'home-strip', 'home-label-zone');
+  } else if (currentView === 'project' && document.getElementById('view-project').classList.contains('is-gallery')) {
+    updateLabelsFromX(currentX, 'proj-strip', 'proj-label-zone');
   }
 
   requestAnimationFrame(animate);
@@ -981,13 +1028,24 @@ function setupTouchScroll() {
 function showProject(project) {
   savedTargetX = targetX;
 
+  const viewProject = document.getElementById('view-project');
+  const labelZone = document.getElementById('proj-label-zone');
   const strip = document.getElementById('proj-strip');
   strip.innerHTML = '';
   strip.style.transform = 'translateX(0px)';
 
+  if (project.isGallery) {
+    viewProject.classList.add('is-gallery');
+    labelZone.style.display = 'flex';
+    labelZone.innerHTML = '';
+  } else {
+    viewProject.classList.remove('is-gallery');
+    labelZone.style.display = 'none';
+  }
+
   const stripHeight = strip.parentElement.offsetHeight;
 
-  project.images.forEach(im => {
+  project.images.forEach((im, i) => {
     const w = stripHeight * im.ratio;
     const tile = document.createElement('div');
     tile.className = 'strip-tile';
@@ -1014,25 +1072,49 @@ function showProject(project) {
       tile.appendChild(img);
     }
     strip.appendChild(tile);
+
+    if (project.isGallery && project.imageLabels && project.imageLabels[i]) {
+      const lbl = project.imageLabels[i];
+      const label = document.createElement('div');
+      label.className = 'project-label';
+      const title = document.createElement('span');
+      title.className = 'lbl-title';
+      title.innerHTML = lbl.title;
+      label.appendChild(title);
+      if (lbl.subtitle) {
+        const subtitle = document.createElement('span');
+        subtitle.className = 'lbl-subtitle';
+        subtitle.innerHTML = lbl.subtitle;
+        label.appendChild(subtitle);
+      }
+      labelZone.appendChild(label);
+    }
   });
 
-  document.getElementById('proj-title').innerHTML = project.title;
-  document.getElementById('proj-desc').innerHTML = project.description;
-  const noteEl = document.getElementById('proj-note');
-  noteEl.textContent = project.note || '';
-  noteEl.style.display = project.note ? 'block' : 'none';
+  if (!project.isGallery) {
+    document.getElementById('proj-title').innerHTML = project.title;
+    document.getElementById('proj-desc').innerHTML = project.description;
+    const noteEl = document.getElementById('proj-note');
+    noteEl.textContent = project.note || '';
+    noteEl.style.display = project.note ? 'block' : 'none';
+  }
 
   activeStripId = 'proj-strip';
   targetX = 0;
   currentX = 0;
-  requestAnimationFrame(() => recalcMaxScroll());
+  requestAnimationFrame(() => {
+    recalcMaxScroll();
+    if (project.isGallery) {
+      updateLabelsFromX(0, 'proj-strip', 'proj-label-zone');
+    }
+  });
 
   setNavState('project');
   switchView('view-project');
 }
 
 // ── HOME (RETURN) ─────────────────────────────────────────────────────────────
-function showHome() {
+function showHome(push) {
   activeStripId = 'home-strip';
   targetX = savedTargetX;
   currentX = savedTargetX;
@@ -1044,8 +1126,9 @@ function showHome() {
     recalcMaxScroll();
     const strip = document.getElementById('home-strip');
     strip.style.transform = `translateX(${-currentX}px)`;
-    updateLabelsFromX(currentX);
+    updateLabelsFromX(currentX, 'home-strip', 'home-label-zone');
   });
+  if (push !== false) window.history.pushState({}, '', '/');
 }
 
 // ── ABOUT VIEW ────────────────────────────────────────────────────────────────
@@ -1058,6 +1141,8 @@ function buildAbout() {
   profilePic.className = 'about-profile-pic';
   profilePic.src = 'projects/About/Main new.png';
   profilePic.alt = 'Ido Arosh';
+  profilePic.style.cursor = 'pointer';
+  profilePic.addEventListener('click', () => triggerEasterEgg(profilePic));
   grid.appendChild(profilePic);
 
   const bioBlock = document.createElement('div');
@@ -1119,13 +1204,79 @@ function buildAbout() {
   grid.appendChild(contactItemsWrapper);
 }
 
-function showAbout() {
+function showAbout(push) {
   if (activeStripId === 'home-strip') {
     savedTargetX = targetX;
   }
   activeStripId = null;
   setNavState('about');
   switchView('view-about');
+  if (push !== false) window.history.pushState({}, '', '/about');
+}
+
+// ── EASTER EGG ────────────────────────────────────────────────────────────────
+let easterEggActive = false;
+
+function triggerEasterEgg(sourceImg) {
+  if (easterEggActive) return;
+  easterEggActive = true;
+
+  // Create overlay container
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;pointer-events:none;';
+  document.body.appendChild(overlay);
+
+  const clones = [];
+  let spawned = 0;
+  const totalClones = 40;
+
+  // PHASE 1 — FLOOD (0ms to 1000ms)
+  const spawnInterval = setInterval(() => {
+    if (spawned >= totalClones) {
+      clearInterval(spawnInterval);
+      return;
+    }
+
+    const clone = document.createElement('img');
+    clone.src = sourceImg.src;
+    clone.alt = '';
+
+    const size = 50 + Math.random() * 110; // 50–160px
+    const rotation = -30 + Math.random() * 60; // -30 to 30 deg
+
+    clone.style.cssText = `
+      position: fixed;
+      z-index: 9999;
+      pointer-events: none;
+      width: ${size}px;
+      height: auto;
+      top: ${-5 + Math.random() * 110}vh;
+      left: ${-5 + Math.random() * 110}vw;
+      animation: easterEggPop 200ms ease-out forwards;
+      transition: opacity 400ms ease-in, transform 400ms ease-in;
+    `;
+    clone.style.setProperty('--r', rotation + 'deg');
+
+    overlay.appendChild(clone);
+    clones.push(clone);
+    spawned++;
+  }, 25);
+
+  // PHASE 2 — HOLD (1000ms to 3000ms) — nothing happens
+
+  // PHASE 3 — DISAPPEAR (3000ms to 3400ms)
+  setTimeout(() => {
+    clones.forEach(clone => {
+      clone.style.opacity = '0';
+      clone.style.transform = `scale(0.7) rotate(${clone.style.getPropertyValue('--r')})`;
+    });
+
+    // Cleanup after transition completes
+    setTimeout(() => {
+      overlay.remove();
+      easterEggActive = false;
+    }, 400);
+  }, 3000);
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
@@ -1148,6 +1299,22 @@ window.addEventListener('resize', () => {
   const strip = document.getElementById(activeStripId);
   if (strip) strip.style.transform = `translateX(${-currentX}px)`;
   positionLabels();
+  if (currentView === 'project' && document.getElementById('view-project').classList.contains('is-gallery')) {
+    updateLabelsFromX(currentX, 'proj-strip', 'proj-label-zone');
+  }
+});
+// ── HISTORY API ──────────────────────────────────────────────────────────────
+window.addEventListener('popstate', () => {
+  const path = window.location.pathname;
+  if (path === '/' || path === '') {
+    showHome(false);
+  } else if (path === '/about') {
+    showAbout(false);
+  } else if (path.startsWith('/project/')) {
+    const id = path.split('/project/')[1];
+    const project = projects.find(p => p.id === id);
+    if (project) showProject(project);
+  }
 });
 </script>
 </body>

@@ -749,9 +749,9 @@ const projects = [
 const about = {
   symbol: "*",
   bio: [
-    "I’m a second-year Visual Communication student at Shenkar, originally from Moshav Brosh and based in Tel Aviv for the past four years.",
-    "I’m the kind of person who notices bad kerning before noticing the weather, which probably explains a lot. Since May 2022, I’ve been paying my bills through Haaretz newspaper, developing visual concepts and graphics for conferences and events, alongside layout work for the newspaper. I now continue there as a student designer at the Ads Studio.",
-    "I also work with private clients on graphics, ads, and visual content, so there’s a small chance one of my designs once made you crave a bottle of wine."
+    "I’m a second-year Visual Communication student at Shenkar, originally from Moshav Brosh and based in Tel Aviv.",
+    "I’m the kind of person who notices bad kerning before noticing the weather, which probably explains a lot. For the past few years, I’ve been designing for Haaretz. I started there in May 2022, developing visual concepts and graphics for conferences and events, alongside layout work for the newspaper. Since starting my studies at Shenkar in late 2024, I’ve continued working in a student position at the Ads Studio.",
+    "I also collaborate with private clients on graphics, ads, and visual content. So there’s a small chance one of my designs has already made you crave a bottle of wine :)"
   ],
   services: [
     ["Graphic Design", "Motion Design", "Web Design"],
@@ -761,7 +761,7 @@ const about = {
   contact: [
     { label: "Email", value: "idoarosh@gmail.com" },
     { label: "Phone", value: "054-2454201" },
-    { label: "Instagram", value: "@designbyido" }
+    { label: "Instagram", value: "<a href=\"https://www.instagram.com/designbyido/\" target=\"_blank\">@designbyido</a>" }
   ]
 };
 
@@ -1246,7 +1246,7 @@ function buildAbout() {
     label.textContent = c.label;
     const value = document.createElement('div');
     value.className = 'c-value';
-    value.textContent = c.value;
+    value.innerHTML = c.value;
     item.appendChild(label);
     item.appendChild(value);
     contactItemsWrapper.appendChild(item);

@@ -187,26 +187,28 @@ img { display: block; border-radius: 0; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #111111 !important;
-  color: #ffffff !important;
-  border: 1px solid #111111;
-  transition: background 250ms ease, color 250ms ease, opacity 250ms ease, transform 250ms ease;
+  background: #ffffff !important;
+  color: #111111 !important;
+  border: 1px solid #e2e2e2;
+  transition: background 250ms ease, color 250ms ease, border-color 250ms ease, opacity 250ms ease, transform 250ms ease;
   user-select: none;
   position: relative;
   box-sizing: border-box;
-  gap: 12px;
+  gap: 14px;
   filter: brightness(1.0) !important;
 }
 
 .view-more-tile:hover {
-  background: #000000 !important;
+  background: #111111 !important;
+  color: #ffffff !important;
+  border-color: #111111;
 }
 
 .view-more-tile .vm-circle {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border: 1.5px solid #111111;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -223,34 +225,25 @@ img { display: block; border-radius: 0; }
   font-size: 18px;
   line-height: 1;
   transition: transform 250ms ease;
-  color: #ffffff;
+  color: #111111;
 }
 
 .view-more-tile:hover .vm-arrow {
   transform: translateX(4px);
-}
-
-.view-more-tile .vm-text-group {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-}
-
-.view-more-tile .vm-title {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   color: #ffffff;
 }
 
-.view-more-tile .vm-subtitle {
-  font-size: 9px;
-  font-weight: 400;
-  color: #888888;
+.view-more-tile .vm-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  color: #111111;
+  transition: color 250ms ease;
+}
+
+.view-more-tile:hover .vm-title {
+  color: #ffffff;
 }
 
 /* Entering animation for newly revealed tiles */
@@ -1044,15 +1037,12 @@ function buildHome() {
     const vmTile = document.createElement('div');
     vmTile.className = 'strip-tile view-more-tile';
     vmTile.id = 'vm-tile';
-    vmTile.style.width = Math.max(180, stripHeight * 0.42) + 'px';
+    vmTile.style.width = Math.max(170, stripHeight * 0.38) + 'px';
     vmTile.innerHTML = `
       <div class="vm-circle">
         <span class="vm-arrow">→</span>
       </div>
-      <div class="vm-text-group">
-        <div class="vm-title">View More</div>
-        <div class="vm-subtitle">3 More Projects</div>
-      </div>
+      <div class="vm-title">View More</div>
     `;
     vmTile.addEventListener('click', () => {
       if (wasDragging) return;
@@ -1081,12 +1071,8 @@ function expandHomeProjects() {
   const vmTile = document.getElementById('vm-tile');
   const stripHeight = strip.parentElement.offsetHeight;
 
-  if (vmTile) {
-    vmTile.style.opacity = '0';
-    vmTile.style.transform = 'scale(0.95)';
-    setTimeout(() => {
-      if (vmTile && vmTile.parentNode) vmTile.parentNode.removeChild(vmTile);
-    }, 250);
+  if (vmTile && vmTile.parentNode) {
+    vmTile.parentNode.removeChild(vmTile);
   }
 
   const newTiles = [];
@@ -1098,17 +1084,15 @@ function expandHomeProjects() {
     newTiles.push(tile);
   }
 
-  requestAnimationFrame(() => {
-    recalcMaxScroll();
-    positionLabels();
+  recalcMaxScroll();
+  positionLabels();
 
-    setTimeout(() => {
-      newTiles.forEach((tile, idx) => {
-        setTimeout(() => {
-          tile.classList.add('tile-visible');
-        }, idx * 70);
-      });
-    }, 50);
+  requestAnimationFrame(() => {
+    newTiles.forEach((tile, idx) => {
+      setTimeout(() => {
+        tile.classList.add('tile-visible');
+      }, idx * 60);
+    });
   });
 }
 

@@ -178,6 +178,76 @@ img { display: block; border-radius: 0; }
   pointer-events: none;
 }
 
+/* ── VIEW MORE TILE ── */
+.view-more-tile {
+  height: 100%;
+  flex-shrink: 0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f8f8f8;
+  color: #111111;
+  border: 1px solid #e5e5e5;
+  transition: background 250ms ease, color 250ms ease, border-color 250ms ease, opacity 250ms ease, transform 250ms ease;
+  user-select: none;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.view-more-tile:hover {
+  background: #111111;
+  color: #ffffff;
+  border-color: #111111;
+}
+
+.view-more-tile .vm-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.view-more-tile .vm-arrow {
+  display: inline-block;
+  transition: transform 250ms ease;
+  font-size: 15px;
+}
+
+.view-more-tile:hover .vm-arrow {
+  transform: translateX(5px);
+}
+
+.view-more-tile .vm-subtitle {
+  font-size: 9px;
+  font-weight: 400;
+  color: #888888;
+  text-transform: uppercase;
+  margin-top: 6px;
+  letter-spacing: 0.05em;
+  transition: color 250ms ease;
+}
+
+.view-more-tile:hover .vm-subtitle {
+  color: #aaaaaa;
+}
+
+/* Entering animation for newly revealed tiles */
+.strip-tile.tile-entering {
+  opacity: 0;
+  transform: translateX(30px);
+  transition: opacity 400ms cubic-bezier(0.16, 1, 0.3, 1), transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.strip-tile.tile-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
 /* ── LABEL ZONE ── */
 .label-zone {
   position: fixed;
@@ -899,6 +969,45 @@ function switchView(id) {
 }
 
 // ── HOME ──────────────────────────────────────────────────────────────────────
+let isHomeExpanded = false;
+
+function createHomeTile(p, i, stripHeight) {
+  const coverRatios = [0.65, 0.64, 0.664, 0.68, 0.65, 0.68, 0.8, 0.6];
+  const mobileMultipliers = [1.0, 1.08, 1.0, 1.0, 1.10, 1.10, 1.0, 1.0];
+  const desktopMultipliers = [1.0, 1.10, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
+  const ratio = coverRatios[i] || 1.0;
+  const isMobile = window.innerWidth <= 768;
+  const mult = isMobile ? (mobileMultipliers[i] || 1.0) : (desktopMultipliers[i] || 1.0);
+  const w = stripHeight * ratio * mult;
+
+  const tile = document.createElement('div');
+  tile.className = 'strip-tile';
+  tile.style.width = w + 'px';
+  tile.dataset.index = i;
+  const img = document.createElement('img');
+  img.src = p.coverImage;
+  img.alt = p.title;
+  img.loading = 'lazy';
+  tile.appendChild(img);
+
+  tile.addEventListener('click', () => {
+    if (wasDragging) return;
+    showProject(p);
+    window.history.pushState({}, '', '#project/' + p.id);
+  });
+
+  tile.addEventListener('mouseenter', () => {
+    const strip = document.getElementById('home-strip');
+    if (!strip) return;
+    const allTiles = strip.querySelectorAll('.strip-tile');
+    allTiles.forEach(t => {
+      t.style.filter = t === tile ? 'brightness(1.0)' : 'brightness(0.75)';
+    });
+  });
+
+  return tile;
+}
+
 function buildHome() {
   const strip = document.getElementById('home-strip');
   const labelZone = document.getElementById('home-label-zone');
@@ -907,40 +1016,28 @@ function buildHome() {
   labelZone.innerHTML = '';
 
   const stripHeight = strip.parentElement.offsetHeight;
+  const visibleProjects = isHomeExpanded ? projects : projects.slice(0, 5);
 
-  projects.forEach((p, i) => {
-    const coverRatios = [0.65, 0.64, 0.664, 0.68, 0.65, 0.68, 0.8, 0.6];
-    const mobileMultipliers = [1.0, 1.08, 1.0, 1.0, 1.10, 1.10, 1.0, 1.0];
-    const desktopMultipliers = [1.0, 1.10, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
-    const ratio = coverRatios[i] || 1.0;
-    const isMobile = window.innerWidth <= 768;
-    const mult = isMobile ? (mobileMultipliers[i] || 1.0) : (desktopMultipliers[i] || 1.0);
-    const w = stripHeight * ratio * mult;
-
-    const tile = document.createElement('div');
-    tile.className = 'strip-tile';
-    tile.style.width = w + 'px';
-    tile.dataset.index = i;
-    const img = document.createElement('img');
-    img.src = p.coverImage;
-    img.alt = p.title;
-    img.loading = 'lazy';
-    tile.appendChild(img);
-    tile.addEventListener('click', () => {
-      if (wasDragging) return;
-      showProject(p);
-      window.history.pushState({}, '', '#project/' + p.id);
-    });
-
-    tile.addEventListener('mouseenter', () => {
-      const allTiles = strip.querySelectorAll('.strip-tile');
-      allTiles.forEach(t => {
-        t.style.filter = t === tile ? 'brightness(1.0)' : 'brightness(0.75)';
-      });
-    });
-
+  visibleProjects.forEach((p, i) => {
+    const tile = createHomeTile(p, i, stripHeight);
     strip.appendChild(tile);
   });
+
+  if (!isHomeExpanded) {
+    const vmTile = document.createElement('div');
+    vmTile.className = 'view-more-tile';
+    vmTile.id = 'vm-tile';
+    vmTile.style.width = Math.max(160, stripHeight * 0.38) + 'px';
+    vmTile.innerHTML = `
+      <div class="vm-title">View More <span class="vm-arrow">→</span></div>
+      <div class="vm-subtitle">3 More Projects</div>
+    `;
+    vmTile.addEventListener('click', () => {
+      if (wasDragging) return;
+      expandHomeProjects();
+    });
+    strip.appendChild(vmTile);
+  }
 
   strip.addEventListener('mouseleave', () => {
     strip.querySelectorAll('.strip-tile').forEach(t => {
@@ -954,12 +1051,51 @@ function buildHome() {
   });
 }
 
+function expandHomeProjects() {
+  if (isHomeExpanded) return;
+  isHomeExpanded = true;
+
+  const strip = document.getElementById('home-strip');
+  const vmTile = document.getElementById('vm-tile');
+  const stripHeight = strip.parentElement.offsetHeight;
+
+  if (vmTile) {
+    vmTile.style.opacity = '0';
+    vmTile.style.transform = 'scale(0.95)';
+    setTimeout(() => {
+      if (vmTile && vmTile.parentNode) vmTile.parentNode.removeChild(vmTile);
+    }, 250);
+  }
+
+  const newTiles = [];
+  for (let i = 5; i < projects.length; i++) {
+    const p = projects[i];
+    const tile = createHomeTile(p, i, stripHeight);
+    tile.classList.add('tile-entering');
+    strip.appendChild(tile);
+    newTiles.push(tile);
+  }
+
+  requestAnimationFrame(() => {
+    recalcMaxScroll();
+    positionLabels();
+
+    setTimeout(() => {
+      newTiles.forEach((tile, idx) => {
+        setTimeout(() => {
+          tile.classList.add('tile-visible');
+        }, idx * 70);
+      });
+    }, 50);
+  });
+}
+
 function updateLabelsFromX(x, stripId = 'home-strip', labelZoneId = 'home-label-zone') {
   const strip = document.getElementById(stripId);
   const labelZone = document.getElementById(labelZoneId);
   if (!strip || !labelZone || labelZone.style.display === 'none') return;
   const labels = labelZone.querySelectorAll('.project-label');
-  const tiles = strip.querySelectorAll('.strip-tile');
+  const tiles = strip.querySelectorAll('.strip-tile[data-index]');
 
   const isMobile = window.innerWidth <= 768;
 
@@ -977,7 +1113,8 @@ function updateLabelsFromX(x, stripId = 'home-strip', labelZoneId = 'home-label-
       const tileLeft = tile.offsetLeft - x;
       if (labels[i]) {
         labels[i].style.width = '';
-        labels[i].style.left = (tileLeft + (i === 0 ? 24 : 0)) + 'px';
+        const realIndex = parseInt(tile.dataset.index);
+        labels[i].style.left = (tileLeft + (realIndex === 0 ? 24 : 0)) + 'px';
       }
     });
   }
@@ -988,11 +1125,13 @@ function positionLabels() {
   const labelZone = document.getElementById('home-label-zone');
   labelZone.innerHTML = '';
 
-  const tiles = strip.querySelectorAll('.strip-tile');
+  const tiles = strip.querySelectorAll('.strip-tile[data-index]');
   const isMobile = window.innerWidth <= 768;
 
-  tiles.forEach((tile, i) => {
+  tiles.forEach((tile) => {
+    const i = parseInt(tile.dataset.index);
     const p = projects[i];
+    if (!p) return;
     const tileLeft = tile.offsetLeft - currentX;
 
     const label = document.createElement('div');

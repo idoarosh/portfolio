@@ -187,39 +187,62 @@ img { display: block; border-radius: 0; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #f8f8f8;
-  color: #111111;
-  border: 1px solid #e5e5e5;
-  transition: background 250ms ease, color 250ms ease, border-color 250ms ease, opacity 250ms ease, transform 250ms ease;
+  background: #111111 !important;
+  color: #ffffff !important;
+  border: 1px solid #111111;
+  transition: background 250ms ease, color 250ms ease, opacity 250ms ease, transform 250ms ease;
   user-select: none;
   position: relative;
   box-sizing: border-box;
+  gap: 12px;
+  filter: brightness(1.0) !important;
 }
 
 .view-more-tile:hover {
-  background: #111111;
-  color: #ffffff;
-  border-color: #111111;
+  background: #000000 !important;
 }
 
-.view-more-tile .vm-title {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+.view-more-tile .vm-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  transition: border-color 250ms ease, transform 250ms ease, background 250ms ease;
+}
+
+.view-more-tile:hover .vm-circle {
+  border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.08);
 }
 
 .view-more-tile .vm-arrow {
-  display: inline-block;
+  font-size: 18px;
+  line-height: 1;
   transition: transform 250ms ease;
-  font-size: 15px;
+  color: #ffffff;
 }
 
 .view-more-tile:hover .vm-arrow {
-  transform: translateX(5px);
+  transform: translateX(4px);
+}
+
+.view-more-tile .vm-text-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.view-more-tile .vm-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffffff;
 }
 
 .view-more-tile .vm-subtitle {
@@ -227,13 +250,7 @@ img { display: block; border-radius: 0; }
   font-weight: 400;
   color: #888888;
   text-transform: uppercase;
-  margin-top: 6px;
   letter-spacing: 0.05em;
-  transition: color 250ms ease;
-}
-
-.view-more-tile:hover .vm-subtitle {
-  color: #aaaaaa;
 }
 
 /* Entering animation for newly revealed tiles */
@@ -925,11 +942,11 @@ function clamp(val, min, max) {
 function getMaxScroll(stripId) {
   const strip = document.getElementById(stripId);
   if (!strip) return 0;
-  const tiles = strip.querySelectorAll('.strip-tile');
+  const tiles = strip.children;
   if (tiles.length === 0) return 0;
   const gap = parseInt(getComputedStyle(strip).gap) || 8;
   let totalWidth = 0;
-  tiles.forEach((t, i) => {
+  Array.from(tiles).forEach((t, i) => {
     totalWidth += t.offsetWidth;
     if (i < tiles.length - 1) totalWidth += gap;
   });
@@ -1025,12 +1042,17 @@ function buildHome() {
 
   if (!isHomeExpanded) {
     const vmTile = document.createElement('div');
-    vmTile.className = 'view-more-tile';
+    vmTile.className = 'strip-tile view-more-tile';
     vmTile.id = 'vm-tile';
-    vmTile.style.width = Math.max(160, stripHeight * 0.38) + 'px';
+    vmTile.style.width = Math.max(180, stripHeight * 0.42) + 'px';
     vmTile.innerHTML = `
-      <div class="vm-title">View More <span class="vm-arrow">→</span></div>
-      <div class="vm-subtitle">3 More Projects</div>
+      <div class="vm-circle">
+        <span class="vm-arrow">→</span>
+      </div>
+      <div class="vm-text-group">
+        <div class="vm-title">View More</div>
+        <div class="vm-subtitle">3 More Projects</div>
+      </div>
     `;
     vmTile.addEventListener('click', () => {
       if (wasDragging) return;

@@ -190,7 +190,7 @@ img { display: block; border-radius: 0; }
   background: #ffffff !important;
   color: #111111 !important;
   border: 1px solid #e2e2e2;
-  transition: background 250ms ease, color 250ms ease, border-color 250ms ease, opacity 250ms ease, transform 250ms ease;
+  transition: border-color 250ms ease, opacity 250ms ease;
   user-select: none;
   position: relative;
   box-sizing: border-box;
@@ -199,8 +199,8 @@ img { display: block; border-radius: 0; }
 }
 
 .view-more-tile:hover {
-  background: #111111 !important;
-  color: #ffffff !important;
+  background: #ffffff !important;
+  color: #111111 !important;
   border-color: #111111;
 }
 
@@ -212,13 +212,12 @@ img { display: block; border-radius: 0; }
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color 250ms ease, transform 250ms ease, background 250ms ease;
+  transition: transform 250ms ease, border-color 250ms ease;
 }
 
 .view-more-tile:hover .vm-circle {
-  border-color: #ffffff;
-  background: rgba(255, 255, 255, 0.1);
-  transform: scale(1.08);
+  border-color: #111111;
+  transform: scale(1.05);
 }
 
 .view-more-tile .vm-arrow {
@@ -229,8 +228,8 @@ img { display: block; border-radius: 0; }
 }
 
 .view-more-tile:hover .vm-arrow {
-  transform: translateX(4px);
-  color: #ffffff;
+  transform: translateX(5px);
+  color: #111111;
 }
 
 .view-more-tile .vm-title {
@@ -239,11 +238,6 @@ img { display: block; border-radius: 0; }
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #111111;
-  transition: color 250ms ease;
-}
-
-.view-more-tile:hover .vm-title {
-  color: #ffffff;
 }
 
 /* Entering animation for newly revealed tiles */
@@ -1037,7 +1031,7 @@ function buildHome() {
     const vmTile = document.createElement('div');
     vmTile.className = 'strip-tile view-more-tile';
     vmTile.id = 'vm-tile';
-    vmTile.style.width = Math.max(170, stripHeight * 0.38) + 'px';
+    vmTile.style.width = Math.max(136, stripHeight * 0.30) + 'px';
     vmTile.innerHTML = `
       <div class="vm-circle">
         <span class="vm-arrow">→</span>

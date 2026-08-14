@@ -189,26 +189,26 @@ img { display: block; border-radius: 0; }
   justify-content: center;
   background: #ffffff !important;
   color: #111111 !important;
-  border: 1px solid #e2e2e2;
-  transition: border-color 250ms ease, opacity 250ms ease;
+  border: none !important;
+  transition: opacity 250ms ease;
   user-select: none;
   position: relative;
   box-sizing: border-box;
-  gap: 14px;
+  gap: 9px;
   filter: brightness(1.0) !important;
 }
 
 .view-more-tile:hover {
   background: #ffffff !important;
   color: #111111 !important;
-  border-color: #111111;
+  border: none !important;
 }
 
 .view-more-tile .vm-circle {
-  width: 44px;
-  height: 44px;
+  width: 31px;
+  height: 31px;
   border-radius: 50%;
-  border: 1.5px solid #111111;
+  border: 1.2px solid #111111;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -221,19 +221,19 @@ img { display: block; border-radius: 0; }
 }
 
 .view-more-tile .vm-arrow {
-  font-size: 18px;
+  font-size: 13px;
   line-height: 1;
   transition: transform 250ms ease;
   color: #111111;
 }
 
 .view-more-tile:hover .vm-arrow {
-  transform: translateX(5px);
+  transform: translateX(4px);
   color: #111111;
 }
 
 .view-more-tile .vm-title {
-  font-size: 13px;
+  font-size: 9.5px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -976,7 +976,7 @@ function switchView(id) {
 let isHomeExpanded = false;
 
 function createHomeTile(p, i, stripHeight) {
-  const coverRatios = [0.65, 0.64, 0.664, 0.68, 0.65, 0.68, 0.8, 0.6];
+  const coverRatios = [0.65, 0.64, 0.664, 0.68, 0.65, 0.68, 0.68, 0.6];
   const mobileMultipliers = [1.0, 1.08, 1.0, 1.0, 1.10, 1.10, 1.0, 1.0];
   const desktopMultipliers = [1.0, 1.10, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
   const ratio = coverRatios[i] || 1.0;
@@ -1031,7 +1031,7 @@ function buildHome() {
     const vmTile = document.createElement('div');
     vmTile.className = 'strip-tile view-more-tile';
     vmTile.id = 'vm-tile';
-    vmTile.style.width = Math.max(136, stripHeight * 0.30) + 'px';
+    vmTile.style.width = Math.max(95, stripHeight * 0.21) + 'px';
     vmTile.innerHTML = `
       <div class="vm-circle">
         <span class="vm-arrow">→</span>
@@ -1057,6 +1057,24 @@ function buildHome() {
   });
 }
 
+function smoothScrollNudge(amount, duration = 500) {
+  const startX = targetX;
+  const endX = clamp(startX + amount, 0, maxScroll);
+  const startTime = performance.now();
+
+  function step(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(1, elapsed / duration);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    targetX = startX + (endX - startX) * ease;
+    if (progress < 1) {
+      requestAnimationFrame(step);
+    }
+  }
+
+  requestAnimationFrame(step);
+}
+
 function expandHomeProjects() {
   if (isHomeExpanded) return;
   isHomeExpanded = true;
@@ -1080,6 +1098,9 @@ function expandHomeProjects() {
 
   recalcMaxScroll();
   positionLabels();
+
+  const nudgeAmount = Math.min(220, window.innerWidth * 0.25);
+  smoothScrollNudge(nudgeAmount, 550);
 
   requestAnimationFrame(() => {
     newTiles.forEach((tile, idx) => {

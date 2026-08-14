@@ -1315,7 +1315,7 @@ function setupTouchScroll() {
         const deltaX = lastTouchX - e.touches[0].clientX;
 
         const isMobile = window.innerWidth <= 768;
-        const speedMult = isMobile ? 1.8 : 1.3;
+        const speedMult = isMobile ? 2.6 : 1.3;
         const delta = (deltaY + deltaX) * speedMult;
 
         targetX = clamp(targetX + delta, 0, maxScroll);
@@ -1334,7 +1334,7 @@ function setupTouchScroll() {
         wasDragging = true;
         setTimeout(() => { wasDragging = false; }, 300);
 
-        touchVelocity = clamp(touchVelocity, -3.2, 3.2);
+        touchVelocity = clamp(touchVelocity, -4.2, 4.2);
 
         if (Math.abs(touchVelocity) > 0.08) {
           isInertiaActive = true;

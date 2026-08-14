@@ -788,7 +788,7 @@ const projects = [
     ]
   },
   {
-    id: "project-seven",
+    id: "temporary-disruption",
     title: "Temporary Disruption",
     subtitle: "Visual Identity & Branding",
     year: "2026",
@@ -806,7 +806,7 @@ const projects = [
     ]
   },
   {
-    id: "project-eight",
+    id: "tare",
     title: "Tare",
     subtitle: "Packaging Design & Brand Identity",
     year: "2026",
@@ -825,7 +825,7 @@ const projects = [
     ]
   },
   {
-    id: "project-three",
+    id: "collective-memory",
     title: "Collective Memory",
     subtitle: "Visual Study",
     year: "2024",
@@ -843,7 +843,7 @@ const projects = [
     ]
   },
   {
-    id: "project-four",
+    id: "atar-mayner",
     title: "Atar Mayner",
     subtitle: "Vinyl Design",
     year: "2024",
@@ -862,7 +862,7 @@ const projects = [
     ]
   },
   {
-    id: "project-five",
+    id: "migdal-shalom",
     title: "Migdal Shalom",
     subtitle: "Digital Product",
     year: "2025",
@@ -878,7 +878,7 @@ const projects = [
     ]
   },
   {
-    id: "project-six",
+    id: "blue-serpent",
     title: "Blue Serpent",
     subtitle: "Social Media Visual Language",
     year: "2026",
@@ -893,7 +893,7 @@ const projects = [
 
 /* HIDDEN — Gus Van Sant (restore by moving back into the projects array)
   {
-    id: "project-two",
+    id: "gus-van-sant",
     title: "Gus Van Sant",
     subtitle: "Poster Series",
     year: "2024",
@@ -1026,8 +1026,7 @@ function createHomeTile(p, i, stripHeight) {
 
   tile.addEventListener('click', () => {
     if (wasDragging) return;
-    showProject(p);
-    window.history.pushState({}, '', '#project/' + p.id);
+    showProject(p, true);
   });
 
   tile.addEventListener('mouseenter', () => {
@@ -1352,8 +1351,10 @@ function setupTouchScroll() {
 }
 
 // ── PROJECT VIEW ──────────────────────────────────────────────────────────────
-function showProject(project) {
-  savedTargetX = targetX;
+function showProject(project, push = true) {
+  if (currentView === 'home') {
+    savedTargetX = targetX;
+  }
 
   const viewProject = document.getElementById('view-project');
   const labelZone = document.getElementById('proj-label-zone');
@@ -1439,10 +1440,14 @@ function showProject(project) {
 
   setNavState('project');
   switchView('view-project');
+
+  if (push !== false && window.location.hash !== '#project/' + project.id) {
+    window.history.pushState({ view: 'project', id: project.id }, '', '#project/' + project.id);
+  }
 }
 
 // ── HOME (RETURN) ─────────────────────────────────────────────────────────────
-function showHome(push) {
+function showHome(push = true) {
   activeStripId = 'home-strip';
   targetX = savedTargetX;
   currentX = savedTargetX;
@@ -1453,10 +1458,12 @@ function showHome(push) {
   requestAnimationFrame(() => {
     recalcMaxScroll();
     const strip = document.getElementById('home-strip');
-    strip.style.transform = `translateX(${-currentX}px)`;
+    if (strip) strip.style.transform = `translateX(${-currentX}px)`;
     updateLabelsFromX(currentX, 'home-strip', 'home-label-zone');
   });
-  if (push !== false) window.history.pushState({}, '', '#');
+  if (push !== false && window.location.hash !== '' && window.location.hash !== '#') {
+    window.history.pushState({ view: 'home' }, '', '#');
+  }
 }
 
 // ── ABOUT VIEW ────────────────────────────────────────────────────────────────
@@ -1532,14 +1539,16 @@ function buildAbout() {
   grid.appendChild(contactItemsWrapper);
 }
 
-function showAbout(push) {
-  if (activeStripId === 'home-strip') {
+function showAbout(push = true) {
+  if (currentView === 'home') {
     savedTargetX = targetX;
   }
   activeStripId = null;
   setNavState('about');
   switchView('view-about');
-  if (push !== false) window.history.pushState({}, '', '#about');
+  if (push !== false && window.location.hash !== '#about') {
+    window.history.pushState({ view: 'about' }, '', '#about');
+  }
 }
 
 // ── EASTER EGG ────────────────────────────────────────────────────────────────
@@ -1607,11 +1616,29 @@ function triggerEasterEgg(sourceImg) {
   }, 3000);
 }
 
+function handleRoute(push = false) {
+  const hash = window.location.hash;
+  if (hash.startsWith('#project/')) {
+    const id = hash.replace('#project/', '');
+    const project = projects.find(p => p.id === id);
+    if (project) {
+      showProject(project, push);
+      return;
+    }
+  } else if (hash === '#about') {
+    showAbout(push);
+    return;
+  }
+  showHome(push);
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 buildHome();
 buildAbout();
 setupWheelScroll();
 setupTouchScroll();
+handleRoute(false);
+
 requestAnimationFrame(() => {
   recalcMaxScroll();
   positionLabels();
@@ -1631,22 +1658,10 @@ window.addEventListener('resize', () => {
     updateLabelsFromX(currentX, 'proj-strip', 'proj-label-zone');
   }
 });
+
 // ── HISTORY API ──────────────────────────────────────────────────────────────
 window.addEventListener('popstate', () => {
-  const hash = window.location.hash;
-  if (!hash || hash === '#' || hash === '') {
-    showHome(false);
-  } else if (hash === '#about') {
-    showAbout(false);
-  } else if (hash.startsWith('#project/')) {
-    const id = hash.split('#project/')[1];
-    const project = projects.find(p => p.id === id);
-    if (project) {
-      showProject(project);
-    } else {
-      showHome(false);
-    }
-  }
+  handleRoute(false);
 });
 </script>
 </body>

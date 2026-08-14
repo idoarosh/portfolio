@@ -244,10 +244,10 @@ img { display: block; border-radius: 0; }
 }
 
 .view-more-tile .vm-circle {
-  width: 31px;
-  height: 31px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  border: 1.2px solid #111111;
+  border: 1.8px solid #111111;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -259,15 +259,16 @@ img { display: block; border-radius: 0; }
   transform: scale(1.05);
 }
 
-.view-more-tile .vm-arrow {
-  font-size: 13px;
-  line-height: 1;
-  transition: transform 250ms ease;
+.view-more-tile .vm-chevron {
+  width: 12px;
+  height: 12px;
   color: #111111;
+  margin-left: 1px;
+  transition: transform 250ms ease;
 }
 
-.view-more-tile:hover .vm-arrow {
-  transform: translateX(4px);
+.view-more-tile:hover .vm-chevron {
+  transform: translateX(2.5px);
   color: #111111;
 }
 
@@ -1062,10 +1063,12 @@ function buildHome() {
     const vmTile = document.createElement('div');
     vmTile.className = 'strip-tile view-more-tile';
     vmTile.id = 'vm-tile';
-    vmTile.style.width = Math.max(95, stripHeight * 0.21) + 'px';
+    vmTile.style.width = Math.max(85, stripHeight * 0.189) + 'px';
     vmTile.innerHTML = `
       <div class="vm-circle">
-        <span class="vm-arrow">→</span>
+        <svg class="vm-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 6 15 12 9 18"></polyline>
+        </svg>
       </div>
       <div class="vm-title">View More</div>
     `;

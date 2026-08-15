@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>עידו ארוש | Ido Arosh</title>
 <meta name="description" content="עידו ארוש (Ido Arosh) - מעצב גרפי וסטודנט לתקשורת חזותית בשנקר. מומחה בטיפוגרפיה, מוצרים דיגיטליים, מיתוג ועיצוב. לצפייה בתיק העבודות.">
-<meta name="keywords" content="עידו ארוש, עידו הרוש, Ido Arosh, Ido graphics, תקשורת חזותית, עיצוב גרפי, מעצב גרפי, שנקר, Shenkar, graphic design, portfolio, תיק עבודות, טיפוגרפיה, מיתוג">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://idoarosh.com/">
 
@@ -32,7 +31,7 @@
       "@type": "Person",
       "@id": "https://idoarosh.com/#person",
       "name": "עידו ארוש",
-      "alternateName": ["Ido Arosh", "עידו הרוש"],
+      "alternateName": ["Ido Arosh"],
       "url": "https://idoarosh.com/",
       "image": "https://idoarosh.com/projects/About/Main%20new.png",
       "jobTitle": "Graphic Designer & Visual Communication Student",
@@ -57,15 +56,6 @@
         "@id": "https://idoarosh.com/#person"
       },
       "inLanguage": ["he", "en"]
-    },
-    {
-      "@type": "ProfilePage",
-      "@id": "https://idoarosh.com/#profilepage",
-      "url": "https://idoarosh.com/",
-      "name": "עידו ארוש | Ido Arosh - Portfolio & About",
-      "mainEntity": {
-        "@id": "https://idoarosh.com/#person"
-      }
     }
   ]
 }
@@ -1423,7 +1413,7 @@ function showProject(project, push = true) {
     } else {
       const img = document.createElement('img');
       img.src = im.url;
-      img.alt = `${project.title} - ${project.category || 'Design'} by Ido Arosh`;
+      img.alt = '';
       img.loading = 'lazy';
       tile.appendChild(img);
     }
